@@ -21,7 +21,7 @@ func Summarize(contents []string, query string) (string, error) {
 	prompt := buildPrompt(contents, query)
 
 	req := openai.ChatCompletionRequest{
-		Model:     openai.GPT3Dot5Turbo,
+		Model:     openai.GPT4oMini,
 		MaxTokens: 300,
 		Messages: []openai.ChatCompletionMessage{
 			{
