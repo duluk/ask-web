@@ -18,10 +18,12 @@ type opts struct {
 	DBFileName string
 	DBTable    string
 	numResults int
+	numTokens  int
 }
 
 func main() {
 	numResults := flag.Int("n", 3, "Number of search results to use")
+	numTokens := flag.Int("t", 420, "Number of tokens to use for summarization")
 	flag.Parse()
 
 	if flag.NArg() < 1 {
@@ -36,6 +38,7 @@ func main() {
 		DBFileName: "/Users/jab3/.config/ask-web/search.db",
 		DBTable:    "search_results",
 		numResults: *numResults,
+		numTokens:  *numTokens,
 	}
 
 	// If DB exists, it just opens it; otherwise, it creates it first
@@ -69,7 +72,7 @@ func main() {
 	}
 
 	fmt.Println("Summarizing content...")
-	summary, err := summarize.Summarize(openAIKey, cleanedContents, query)
+	summary, err := summarize.Summarize(openAIKey, cleanedContents, query, opts.numTokens)
 	if err != nil {
 		log.Fatal("Error during summarization:", err)
 	}

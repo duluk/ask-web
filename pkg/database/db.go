@@ -2,7 +2,6 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
 	"strconv"
 )
 
@@ -67,13 +66,11 @@ func setSchemaVersion(db *sql.DB, schemaVersion int) error {
 
 func InitializeDB(dbPath string, dbTable string) (*SearchDB, error) {
 	// DB created only if it doesn't exist
-	fmt.Println("Creating database at", dbPath)
 	searchDB, err := NewDB(dbPath, dbTable)
 	if err != nil {
 		return searchDB, err
 	}
 
-	fmt.Println("Checking database schema version")
 	var currentVersion int
 	err = searchDB.db.QueryRow("PRAGMA user_version").Scan(&currentVersion)
 	if err != nil {
