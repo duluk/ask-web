@@ -4,28 +4,29 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/sashabaranov/go-openai"
 )
 
-func Summarize(contents []string, query string) (string, error) {
-	apiKey := os.Getenv("OPENAI_API_KEY")
-	if apiKey == "" {
-		return "", errors.New("environment variable OPENAI_API_KEY must be set")
-	}
-
+func Summarize(apiKey string, contents []string, query string) (string, error) {
 	client := openai.NewClient(apiKey)
 	ctx := context.Background()
 
+	maxTokens := 420
+
+	systemPrompt := fmt.Sprintf("Try to fit the response within %d tokens.", maxTokens)
 	prompt := buildPrompt(contents, query)
 
 	req := openai.ChatCompletionRequest{
 		Model:     openai.GPT4oMini,
-		MaxTokens: 300,
+		MaxTokens: maxTokens,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,
+				Content: systemPrompt,
+			},
+			{
+				Role:    openai.ChatMessageRoleUser,
 				Content: prompt,
 			},
 		},

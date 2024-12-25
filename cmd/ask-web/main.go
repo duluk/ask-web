@@ -23,8 +23,10 @@ func main() {
 	}
 	query := flag.Arg(0)
 
+	apiKey, cseID, openAIKey := utils.SetupKeys()
+
 	fmt.Println("Searching for:", query)
-	results, err := search.GoogleSearch(query, *numResults)
+	results, err := search.GoogleSearch(apiKey, cseID, query, *numResults)
 	if err != nil {
 		log.Fatal("Error during web search:", err)
 	}
@@ -46,7 +48,7 @@ func main() {
 	}
 
 	fmt.Println("Summarizing content...")
-	summary, err := summarize.Summarize(cleanedContents, query)
+	summary, err := summarize.Summarize(openAIKey, cleanedContents, query)
 	if err != nil {
 		log.Fatal("Error during summarization:", err)
 	}
