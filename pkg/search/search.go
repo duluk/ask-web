@@ -2,11 +2,9 @@ package search
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 )
 
 type SearchResult struct {
@@ -23,14 +21,7 @@ type googleSearchResult struct {
 	} `json:"items"`
 }
 
-func GoogleSearch(query string, numResults int) ([]SearchResult, error) {
-	apiKey := os.Getenv("GOOGLE_API_KEY")
-	cseID := os.Getenv("GOOGLE_CSE_ID")
-
-	if apiKey == "" || cseID == "" {
-		return nil, errors.New("environment variables GOOGLE_API_KEY and GOOGLE_CSE_ID must be set")
-	}
-
+func GoogleSearch(apiKey string, cseID string, query string, numResults int) ([]SearchResult, error) {
 	baseURL := "https://www.googleapis.com/customsearch/v1"
 	u, err := url.Parse(baseURL)
 	if err != nil {
