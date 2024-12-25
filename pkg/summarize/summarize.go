@@ -8,13 +8,11 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-func Summarize(apiKey string, contents []string, query string) (string, error) {
+func Summarize(apiKey string, contents []string, query string, maxTokens int) (string, error) {
 	client := openai.NewClient(apiKey)
 	ctx := context.Background()
 
-	maxTokens := 420
-
-	systemPrompt := fmt.Sprintf("Try to fit the response within %d tokens.", maxTokens)
+	systemPrompt := fmt.Sprintf("Fit the response within %d tokens.", maxTokens)
 	prompt := buildPrompt(contents, query)
 
 	req := openai.ChatCompletionRequest{
