@@ -22,7 +22,7 @@ type opts struct {
 }
 
 func main() {
-	dbFileName := flag.String("db", "/Users/jab3/.config/ask-web/search.db", "Database file name")
+	dbFileName := flag.String("db", "/home/jab3/.config/ask-web/search.db", "Database file name")
 	dbTable := flag.String("table", "search_results", "Database table name")
 	numResults := flag.Int("n", 3, "Number of search results to use")
 	numTokens := flag.Int("t", 420, "Number of tokens to use for summarization")
