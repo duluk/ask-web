@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	"ask-web/pkg/search"
 	_ "github.com/mattn/go-sqlite3"
@@ -23,6 +24,14 @@ type SearchDB struct {
 // because we can't store the conversations in the database doesn't mean we
 // should stop the program.
 func NewDB(dbPath string, dbTable string) (*SearchDB, error) {
+	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
+		file, err := os.Create(dbPath)
+		if err != nil {
+			return nil, fmt.Errorf("error creating database file: %v", err)
+		}
+		file.Close()
+	}
+
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		return nil, fmt.Errorf("%v", err)
