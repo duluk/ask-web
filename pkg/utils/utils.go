@@ -2,10 +2,10 @@ package utils
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"strings"
 
+	"ask-web/pkg/search"
 	"github.com/microcosm-cc/bluemonday"
 )
 
@@ -19,12 +19,22 @@ func CleanText(text string) string {
 	return text
 }
 
-func SetupKeys() (string, string, string) {
-	apiKey := getKey("GOOGLE_API_KEY")
-	cseID := getKey("GOOGLE_CSE_ID")
-	openAIKey := getKey("OPENAI_API_KEY")
+func DedupeResults(results []search.SearchResult) []search.SearchResult {
+	seen := make(map[string]bool)
+	dedupedResults := make([]search.SearchResult, 0)
 
-	return apiKey, cseID, openAIKey
+	for _, result := range results {
+		// remove query parameters; this means any URLs that differ only in
+		// query parameters will use only the first one seen. That may or may
+		// not be what we want.
+		cleanURL := strings.Split(result.URL, "?")[0]
+		if _, ok := seen[cleanURL]; !ok {
+			seen[cleanURL] = true
+			dedupedResults = append(dedupedResults, result)
+		}
+	}
+	return dedupedResults
+}
 }
 
 func getKey(keyUpper string) string {
