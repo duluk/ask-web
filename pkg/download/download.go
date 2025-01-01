@@ -1,6 +1,7 @@
 package download
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -13,7 +14,7 @@ func Page(url string) (string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", err
+		return "", fmt.Errorf("download status code: %d", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)

@@ -8,8 +8,15 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-func Summarize(apiKey string, contents []string, query string, maxTokens int) (string, error) {
-	client := openai.NewClient(apiKey)
+type OpenAIClient interface {
+	CreateChatCompletion(ctx context.Context, request openai.ChatCompletionRequest) (openai.ChatCompletionResponse, error)
+}
+
+// client is for testing purposes
+func Summarize(apiKey string, contents []string, query string, maxTokens int, client OpenAIClient) (string, error) {
+	if client == nil {
+		client = openai.NewClient(apiKey)
+	}
 	ctx := context.Background()
 
 	systemPrompt := fmt.Sprintf("Fit the response within %d tokens.", maxTokens)
