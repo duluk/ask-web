@@ -21,6 +21,10 @@ type opts struct {
 	numTokens  int
 }
 
+// TODO:
+// 1. Add a flag to specify whether other search engines should be used
+// 2. Add a flag to specify the number of search results to use per search engine?
+
 func main() {
 	dbFileName := flag.String("db", "/home/jab3/.config/ask-web/search.db", "Database file name")
 	dbTable := flag.String("table", "search_results", "Database table name")
@@ -34,7 +38,15 @@ func main() {
 	}
 	query := flag.Arg(0)
 
-	apiKey, cseID, openAIKey := utils.SetupKeys()
+	apiKeys := utils.SetupKeys()
+
+	// TODO: turn this into a flag
+	// Display keys
+	// fmt.Println("Google API Key:", apiKeys.GoogleAPIKey)
+	// fmt.Println("Bing API Key:", apiKeys.BingAPIKey)
+	// fmt.Println("Bing Config Key:", apiKeys.BingConfigKey)
+	// fmt.Println("CSE ID:", apiKeys.GoogleCSEID)
+	// fmt.Println("OpenAI Key:", apiKeys.OpenAIKey)
 
 	opts := opts{
 		DBFileName: *dbFileName,
@@ -51,11 +63,31 @@ func main() {
 	}
 	defer db.Close()
 
-	fmt.Println("Searching for:", query)
-	results, err := search.GoogleSearch(apiKey, cseID, query, opts.numResults)
+	var googleResults []search.SearchResult
+	if apiKeys.GoogleAPIKey != "" && apiKeys.GoogleCSEID != "" {
+		googleResults, err = search.GoogleSearch(apiKeys.GoogleAPIKey, apiKeys.GoogleCSEID, query, opts.numResults)
+		if err != nil {
+			log.Fatal("Error during web search:", err)
+		}
+	}
+
+	var ddgResults []search.SearchResult
+	ddgResults, err = search.DDGSearch(query, opts.numResults)
 	if err != nil {
 		log.Fatal("Error during web search:", err)
 	}
+
+	var bingResults []search.SearchResult
+	if apiKeys.BingAPIKey != "" && apiKeys.BingConfigKey != "" {
+		bingResults, err = search.BingSearch(apiKeys.BingAPIKey, apiKeys.BingConfigKey, query, opts.numResults)
+		if err != nil {
+			log.Fatal("Error during web search:", err)
+		}
+	}
+
+	results := append(googleResults, ddgResults...)
+	results = append(results, bingResults...)
+	results = utils.DedupeResults(results)
 
 	var contents []string
 	for _, result := range results {
@@ -73,8 +105,11 @@ func main() {
 		cleanedContents = append(cleanedContents, utils.CleanText(content))
 	}
 
+	// Set noOpClient to nil to use the real OpenAI API; the mock client is
+	// used for testing. I'm not sure I like this method.
+	var noOpClient summarize.OpenAIClient
 	fmt.Println("Summarizing content...")
-	summary, err := summarize.Summarize(openAIKey, cleanedContents, query, opts.numTokens)
+	summary, err := summarize.Summarize(apiKeys.OpenAIKey, cleanedContents, query, opts.numTokens, noOpClient)
 	if err != nil {
 		log.Fatal("Error during summarization:", err)
 	}
