@@ -35,20 +35,31 @@ func DedupeResults(results []search.SearchResult) []search.SearchResult {
 	}
 	return dedupedResults
 }
+
+func SetupKeys() search.APIKeys {
+	return search.APIKeys{
+		GoogleAPIKey:  getKey("GOOGLE_API_KEY"),
+		GoogleCSEID:   getKey("GOOGLE_CSE_ID"),
+		BingAPIKey:    getKey("BING_API_KEY"),
+		BingConfigKey: getKey("BING_CONFIG_KEY"),
+		OpenAIKey:     getKey("OPENAI_API_KEY"),
+	}
 }
 
+// Return empty string if no key is found so that we can just check for the
+// existence of a key to decide if we should use it that engine
 func getKey(keyUpper string) string {
 	key := os.Getenv(keyUpper)
 
-	// TODO this should attempt XDG_CONFIG_HOME first, then HOME
+	// TODO: this should attempt XDG_CONFIG_HOME first, then HOME
+	// -> actually there is an XDG package that can do that
 	if key == "" {
 		home := os.Getenv("HOME")
 		keyLower := strings.ToLower(keyUpper)
 		keyLower = strings.ReplaceAll(keyLower, "_", "-")
 		file, err := os.Open(home + "/.config/ask-web/" + keyLower)
 		if err != nil {
-			fmt.Printf("No ENV for %s and Error reading file: %s", keyUpper, err)
-			os.Exit(1)
+			return ""
 		}
 		defer file.Close()
 
@@ -57,8 +68,7 @@ func getKey(keyUpper string) string {
 			key = scanner.Text()
 		}
 		if err := scanner.Err(); err != nil {
-			fmt.Printf("No ENV for %s and Error reading file: %s", keyUpper, err)
-			os.Exit(1)
+			key = ""
 		}
 	}
 
