@@ -6,15 +6,14 @@ toolchain go1.23.4
 
 require (
 	github.com/PuerkitoBio/goquery v1.10.1
+	github.com/adrg/xdg v0.5.3
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/microcosm-cc/bluemonday v1.0.27
 	github.com/sashabaranov/go-openai v1.36.0
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/oauth2 v0.24.0
 )
 
 require (
-	cloud.google.com/go/compute/metadata v0.6.0 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
