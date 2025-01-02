@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+
+	"github.com/adrg/xdg"
 
 	"ask-web/pkg/database"
 	"ask-web/pkg/download"
@@ -26,7 +29,15 @@ type opts struct {
 // 2. Add a flag to specify the number of search results to use per search engine?
 
 func main() {
-	dbFileName := flag.String("db", "/home/jab3/.config/ask-web/search.db", "Database file name")
+	configDir, err := xdg.ConfigFile("ask-web")
+	if err != nil {
+		log.Fatal("Error getting config directory:", err)
+		os.Exit(1)
+	}
+
+	defaultDBFileName := filepath.Join(configDir, "search.db")
+
+	dbFileName := flag.String("db", defaultDBFileName, "Database file name")
 	dbTable := flag.String("table", "search_results", "Database table name")
 	numResults := flag.Int("n", 3, "Number of search results to use")
 	numTokens := flag.Int("t", 420, "Number of tokens to use for summarization")
