@@ -28,16 +28,29 @@ $ make install # $GO_PATH
 
 ## Usage
 
-#### Set the API Key
-1. The following keys are required:
-* OpenAI for LLM summary (OPENAI_API_KEY)
-* Google API for web search (GOOGLE_API_KEY)
-* Google Custom Search Engine ID for web search (GOOGLE_CSE_ID)
-
-1. Put the keys in the following files located in `$HOME/.config/ask-web/`:
-* openai-api-key
-* google-api-key
-* google-cse-id
+#### Set the Keys
+1. For Searching
+    * DuckDuckGo
+        - No key required
+    * Google
+        - API
+          - Env: GOOGLE_API_KEY
+          - File: `$HOME/.config/ask-web/google-api-key`
+        - Custom Search ID
+          - Env: GOOGLE_CSE_ID
+          - File: `$HOME/.config/ask-web/google-cse-id`
+    * Bing
+      - API
+        - Env: BING_API_KEY
+        - File: `$HOME/.config/ask-web/bing-api-key`
+      - Config
+        - Env: BING_CONFIG_KEY
+        - File: `$HOME/.config/ask-web/bing-config-key`
+2. For Summarization
+    * ChatGPT (OpenAI)
+      - Env: OPENAI_API_KEY
+      - File: `$HOME/.config/ask-web/openai-api-key`
+    * Others coming soon...
 
 #### Send a Query
 ```bash
@@ -48,6 +61,9 @@ $ ask-web "What's the most popular chess opening in 2024?"
 ```bash
 $ ask-web -n 5 "What is the current political climate in the United States?"
 ```
+
+  - **N.B.** Currently, `n` will be used for each search engine being used
+
 
 ### [NOTE]
 > This is a work in progress and not all functionality has been added.
