@@ -52,6 +52,8 @@ $ make install # $GO_PATH
       - File: `$HOME/.config/ask-web/openai-api-key`
     * Others coming soon...
 
+*Note*: setting up those search engine keys is beyond the scope of this README. IMHO it's not as straightforward as it could be if you haven't done it before.
+
 #### Send a Query
 ```bash
 $ ask-web "What's the most popular chess opening in 2024?"
