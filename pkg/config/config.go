@@ -2,12 +2,15 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/user"
 	"path/filepath"
 	"strings"
 
 	"golang.org/x/term"
+
+	"github.com/adrg/xdg"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -25,7 +28,9 @@ var (
 )
 
 type Opts struct {
-	DumpConfig bool
+	ConfigDir   string
+	DumpConfig  bool
+	ShowAPIKeys bool
 
 	Model         string
 	ContextLength int
@@ -45,7 +50,11 @@ type Opts struct {
 }
 
 func Initialize() (*Opts, error) {
-	configDir := filepath.Join(os.Getenv("HOME"), ".config", "ask-web")
+	configDir, err := xdg.ConfigFile("ask-web")
+	if err != nil {
+		log.Fatal("Error getting config directory:", err)
+	}
+	// configDir := filepath.Join(os.Getenv("HOME"), ".config", "ask-web")
 
 	// TODO: though I've put so much effort into the config file to read it
 	// first so that the values can be used as defaults (eg in --help), I'm
@@ -90,6 +99,7 @@ func Initialize() (*Opts, error) {
 	// Bind all flags to viper
 	viper.BindPFlag("model.num_results", pflag.Lookup("context"))
 	viper.BindPFlag("dump-config", pflag.Lookup("dump-config"))
+	viper.BindPFlag("show-keys", pflag.Lookup("show-keys"))
 	viper.BindPFlag("search", pflag.Lookup("search"))
 	viper.BindPFlag("show", pflag.Lookup("show"))
 	viper.BindPFlag("database.file", pflag.Lookup("database"))
@@ -110,14 +120,17 @@ func Initialize() (*Opts, error) {
 	}
 
 	return &Opts{
+		ConfigDir:     configDir,
+		DumpConfig:    viper.GetBool("dump-config"),
+		ShowAPIKeys:   viper.GetBool("show-keys"),
 		Model:         pflag.Lookup("model").Value.String(),
 		ContextLength: viper.GetInt("model.context_length"),
-		DumpConfig:    viper.GetBool("dump-config"),
+		Temperature:   viper.GetFloat64("model.temperature"),
 		DBFileName:    os.ExpandEnv(viper.GetString("database.file")),
 		DBTable:       viper.GetString("database.table"),
 		SummaryPrompt: viper.GetString("model.summary_prompt"),
+		NumResults:    viper.GetInt("model.num_results"),
 		MaxTokens:     viper.GetInt("model.max_tokens"),
-		Temperature:   viper.GetFloat64("model.temperature"),
 		ScreenWidth:   min(viper.GetInt("screen.width"), MaxTermWidth) - widthPad,
 		ScreenHeight:  viper.GetInt("screen.height"),
 		TabWidth:      TabWidth,
