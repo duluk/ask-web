@@ -1,9 +1,13 @@
 package utils
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
+
+	// "github.com/adrg/xdg"
 
 	"ask-web/pkg/search"
 )
@@ -137,98 +141,118 @@ func TestDedupeResults(t *testing.T) {
 }
 
 func TestSetupKeys(t *testing.T) {
-	// Backup the original environment variables
-	originalEnv := make(map[string]string)
-	theKeys := []string{"GOOGLE_API_KEY", "GOOGLE_CSE_ID", "BING_API_KEY", "BING_CONFIG_KEY", "OPENAI_API_KEY"}
-	for _, key := range theKeys {
-		originalEnv[key] = os.Getenv(key)
-		os.Unsetenv(key)
+	originalConfigHome := os.Getenv("XDG_CONFIG_HOME")
+	defer os.Setenv("XDG_CONFIG_HOME", originalConfigHome)
+
+	tempDir, err := os.MkdirTemp("", "ask-web-test")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	os.Setenv("XDG_CONFIG_HOME", tempDir)
+
+	askWebConfigDir := filepath.Join(tempDir, "ask-web")
+	err = os.MkdirAll(askWebConfigDir, 0755)
+	if err != nil {
+		t.Fatalf("Failed to create ask-web config dir: %v", err)
 	}
 
-	defer func() {
-		// Restore environment variables after the test
-		for key, value := range originalEnv {
-			os.Setenv(key, value)
-		}
-	}()
-
-	// Set up the environment variables for testing
-	os.Setenv("GOOGLE_API_KEY", "test-google-api-key")
-	os.Setenv("GOOGLE_CSE_ID", "test-google-cse-id")
-	os.Setenv("BING_API_KEY", "test-bing-api-key")
-	os.Setenv("BING_CONFIG_KEY", "test-bing-config-key")
-	os.Setenv("OPENAI_API_KEY", "test-openai-api-key")
-
-	keys := SetupKeys()
-
-	expected := search.APIKeys{
-		GoogleAPIKey:  "test-google-api-key",
-		GoogleCSEID:   "test-google-cse-id",
-		BingAPIKey:    "test-bing-api-key",
-		BingConfigKey: "test-bing-config-key",
-		OpenAIKey:     "test-openai-api-key",
+	testCases := []struct {
+		name     string
+		envVars  map[string]string
+		files    map[string]string
+		expected search.APIKeys
+	}{
+		{
+			name: "All keys from environment",
+			envVars: map[string]string{
+				"GOOGLE_API_KEY":  "env_google_api_key",
+				"GOOGLE_CSE_ID":   "env_google_cse_id",
+				"BING_API_KEY":    "env_bing_api_key",
+				"BING_CONFIG_KEY": "env_bing_config_key",
+				"OPENAI_API_KEY":  "env_openai_api_key",
+			},
+			expected: search.APIKeys{
+				GoogleAPIKey:  "env_google_api_key",
+				GoogleCSEID:   "env_google_cse_id",
+				BingAPIKey:    "env_bing_api_key",
+				BingConfigKey: "env_bing_config_key",
+				OpenAIKey:     "env_openai_api_key",
+			},
+		},
+		{
+			name: "All keys from config files",
+			files: map[string]string{
+				"google-api-key":  "file_google_api_key",
+				"google-cse-id":   "file_google_cse_id",
+				"bing-api-key":    "file_bing_api_key",
+				"bing-config-key": "file_bing_config_key",
+				"openai-api-key":  "file_openai_api_key",
+			},
+			expected: search.APIKeys{
+				GoogleAPIKey:  "file_google_api_key",
+				GoogleCSEID:   "file_google_cse_id",
+				BingAPIKey:    "file_bing_api_key",
+				BingConfigKey: "file_bing_config_key",
+				OpenAIKey:     "file_openai_api_key",
+			},
+		},
+		{
+			name: "Mixed sources",
+			envVars: map[string]string{
+				"GOOGLE_API_KEY": "env_google_api_key",
+				"BING_API_KEY":   "env_bing_api_key",
+			},
+			files: map[string]string{
+				"google-cse-id":   "file_google_cse_id",
+				"bing-config-key": "file_bing_config_key",
+				"openai-api-key":  "file_openai_api_key",
+			},
+			expected: search.APIKeys{
+				GoogleAPIKey:  "env_google_api_key",
+				GoogleCSEID:   "file_google_cse_id",
+				BingAPIKey:    "env_bing_api_key",
+				BingConfigKey: "file_bing_config_key",
+				OpenAIKey:     "file_openai_api_key",
+			},
+		},
+		{
+			name:     "No keys set",
+			expected: search.APIKeys{},
+		},
 	}
 
-	if !reflect.DeepEqual(keys, expected) {
-		t.Errorf("SetupKeys() = %v; want %v", keys, expected)
-	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			os.Unsetenv("GOOGLE_API_KEY")
+			os.Unsetenv("GOOGLE_CSE_ID")
+			os.Unsetenv("BING_API_KEY")
+			os.Unsetenv("BING_CONFIG_KEY")
+			os.Unsetenv("OPENAI_API_KEY")
 
-	// Test case where no environment variables are set
-	for _, key := range []string{"GOOGLE_API_KEY", "GOOGLE_CSE_ID",
-		"BING_API_KEY", "BING_CONFIG_KEY", "OPENAI_API_KEY"} {
-		os.Unsetenv(key)
-	}
-	keys = SetupKeys()
-	expected = search.APIKeys{
-		GoogleAPIKey:  "",
-		GoogleCSEID:   "",
-		BingAPIKey:    "",
-		BingConfigKey: "",
-		OpenAIKey:     "",
-	}
+			for k, v := range tc.envVars {
+				os.Setenv(k, v)
+			}
 
-	if !reflect.DeepEqual(keys, expected) {
-		t.Errorf("SetupKeys() with no env vars = %v; want %v", keys, expected)
-	}
+			for k, v := range tc.files {
+				fmt.Printf("askWebConfigDir: %s\n", askWebConfigDir)
+				fmt.Printf("k: %s\n", k)
+				err := os.WriteFile(filepath.Join(askWebConfigDir, k), []byte(v), 0644)
+				if err != nil {
+					t.Fatalf("Failed to write config file %s: %v", k, err)
+				}
+			}
 
-	// Test case where keys are read from files
-	home := os.Getenv("HOME")
-	if home == "" {
-		t.Skip("HOME environment variable not set, skipping file based key test")
-	}
+			keys := SetupKeys(askWebConfigDir)
 
-	// Create dummy files for the test
-	os.MkdirAll(home+"/.config/ask-web/", 0755)
-	for _, key := range []string{"google-api-key", "google-cse-id", "bing-api-key", "bing-config-key", "openai-api-key"} {
-		file, err := os.Create(home + "/.config/ask-web/" + key)
-		if err != nil {
-			t.Fatalf("Failed to create test key file %s: %v", key, err)
-		}
-		_, err = file.WriteString("file-" + key)
-		if err != nil {
-			t.Fatalf("Failed to write to test key file %s: %v", key, err)
-		}
-		file.Close()
-	}
+			if keys != tc.expected {
+				t.Errorf("Expected %+v, got %+v", tc.expected, keys)
+			}
 
-	keys = SetupKeys()
-	expected = search.APIKeys{
-		GoogleAPIKey:  "file-google-api-key",
-		GoogleCSEID:   "file-google-cse-id",
-		BingAPIKey:    "file-bing-api-key",
-		BingConfigKey: "file-bing-config-key",
-		OpenAIKey:     "file-openai-api-key",
+			for k := range tc.files {
+				os.Remove(filepath.Join(askWebConfigDir, k))
+			}
+		})
 	}
-
-	if !reflect.DeepEqual(keys, expected) {
-		t.Errorf("SetupKeys() with file based keys = %v; want %v", keys,
-			expected)
-	}
-
-	// cleanup dummy files
-	for _, key := range []string{"google-api-key", "google-cse-id", "bing-api-key", "bing-config-key", "openai-api-key"} {
-		os.Remove(home + "/.config/ask-web/" + key)
-	}
-	os.Remove(home + "/.config/ask-web")
-
 }
