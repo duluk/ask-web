@@ -3,13 +3,11 @@ package main
 // TODO: don't use wikipedia for results; too many tokens
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 
-	"github.com/adrg/xdg"
+	"github.com/spf13/pflag"
 
 	"ask-web/pkg/config"
 	"ask-web/pkg/database"
@@ -25,44 +23,28 @@ import (
 // 2. Add a flag to specify the number of search results to use per search engine?
 
 func main() {
-	configDir, err := xdg.ConfigFile("ask-web")
+	opts, err := config.Initialize()
 	if err != nil {
-		log.Fatal("Error getting config directory:", err)
+		log.Fatal("Error initializing config:", err)
 		os.Exit(1)
 	}
 
-	defaultDBFileName := filepath.Join(configDir, "search.db")
-
-	dbFileName := flag.String("db", defaultDBFileName, "Database file name")
-	dbTable := flag.String("table", "search_results", "Database table name")
-	numResults := flag.Int("n", 3, "Number of search results to use")
-	numTokens := flag.Int("t", 420, "Number of tokens to use for summarization")
-	flag.Parse()
-
-	if flag.NArg() < 1 {
-		log.Fatal("Error: Search query is required.")
-		os.Exit(1)
-	}
-	query := flag.Arg(0)
-
-	apiKeys := utils.SetupKeys()
-
-	// TODO: turn this into a flag
-	// Display keys
-	// fmt.Println("Google API Key:", apiKeys.GoogleAPIKey)
-	// fmt.Println("Bing API Key:", apiKeys.BingAPIKey)
-	// fmt.Println("Bing Config Key:", apiKeys.BingConfigKey)
-	// fmt.Println("CSE ID:", apiKeys.GoogleCSEID)
-	// fmt.Println("OpenAI Key:", apiKeys.OpenAIKey)
-
-	opts := Opts{
-		DBFileName: *dbFileName,
-		DBTable:    *dbTable,
-		NumResults: *numResults,
-		MaxTokens:  *numTokens,
+	var query string
+	if pflag.NArg() > 0 {
+		query = pflag.Arg(0)
 	}
 
-	// If DB exists, it just opens it; otherwise, it creates it first
+	apiKeys := utils.SetupKeys(opts.ConfigDir)
+
+	if opts.ShowAPIKeys {
+		fmt.Println("<== API keys ==>")
+		fmt.Println("Google API Key:", apiKeys.GoogleAPIKey)
+		fmt.Println("Bing API Key:", apiKeys.BingAPIKey)
+		fmt.Println("Bing Config Key:", apiKeys.BingConfigKey)
+		fmt.Println("CSE ID:", apiKeys.GoogleCSEID)
+		fmt.Println("OpenAI Key:", apiKeys.OpenAIKey)
+	}
+
 	db, err := database.InitializeDB(opts.DBFileName, opts.DBTable)
 	if err != nil {
 		fmt.Println("Error opening database: ", err)
@@ -72,21 +54,21 @@ func main() {
 
 	var googleResults []search.SearchResult
 	if apiKeys.GoogleAPIKey != "" && apiKeys.GoogleCSEID != "" {
-		googleResults, err = search.GoogleSearch(apiKeys.GoogleAPIKey, apiKeys.GoogleCSEID, query, opts.numResults)
+		googleResults, err = search.GoogleSearch(apiKeys.GoogleAPIKey, apiKeys.GoogleCSEID, query, opts.NumResults)
 		if err != nil {
 			log.Fatal("Error during web search:", err)
 		}
 	}
 
 	var ddgResults []search.SearchResult
-	ddgResults, err = search.DDGSearch(query, opts.numResults)
+	ddgResults, err = search.DDGSearch(query, opts.NumResults)
 	if err != nil {
 		log.Fatal("Error during web search:", err)
 	}
 
 	var bingResults []search.SearchResult
 	if apiKeys.BingAPIKey != "" && apiKeys.BingConfigKey != "" {
-		bingResults, err = search.BingSearch(apiKeys.BingAPIKey, apiKeys.BingConfigKey, query, opts.numResults)
+		bingResults, err = search.BingSearch(apiKeys.BingAPIKey, apiKeys.BingConfigKey, query, opts.NumResults)
 		if err != nil {
 			log.Fatal("Error during web search:", err)
 		}
@@ -116,7 +98,7 @@ func main() {
 	// used for testing. I'm not sure I like this method.
 	var noOpClient summarize.OpenAIClient
 	fmt.Println("Summarizing content...")
-	summary, err := summarize.Summarize(apiKeys.OpenAIKey, cleanedContents, query, opts.numTokens, noOpClient)
+	summary, err := summarize.Summarize(opts, apiKeys.OpenAIKey, cleanedContents, query, noOpClient)
 	if err != nil {
 		log.Fatal("Error during summarization:", err)
 	}
