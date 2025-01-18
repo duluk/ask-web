@@ -1,5 +1,7 @@
 package main
 
+// TODO: don't use wikipedia for results; too many tokens
+
 import (
 	"flag"
 	"fmt"
@@ -9,6 +11,7 @@ import (
 
 	"github.com/adrg/xdg"
 
+	"ask-web/pkg/config"
 	"ask-web/pkg/database"
 	"ask-web/pkg/download"
 	"ask-web/pkg/linewrap"
@@ -16,13 +19,6 @@ import (
 	"ask-web/pkg/summarize"
 	"ask-web/pkg/utils"
 )
-
-type opts struct {
-	DBFileName string
-	DBTable    string
-	numResults int
-	numTokens  int
-}
 
 // TODO:
 // 1. Add a flag to specify whether other search engines should be used
@@ -59,11 +55,11 @@ func main() {
 	// fmt.Println("CSE ID:", apiKeys.GoogleCSEID)
 	// fmt.Println("OpenAI Key:", apiKeys.OpenAIKey)
 
-	opts := opts{
+	opts := Opts{
 		DBFileName: *dbFileName,
 		DBTable:    *dbTable,
-		numResults: *numResults,
-		numTokens:  *numTokens,
+		NumResults: *numResults,
+		MaxTokens:  *numTokens,
 	}
 
 	// If DB exists, it just opens it; otherwise, it creates it first
