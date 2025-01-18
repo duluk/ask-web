@@ -50,7 +50,7 @@ func Summarize(apiKey string, contents []string, query string, maxTokens int, cl
 }
 
 func buildPrompt(contents []string, query string) string {
-	prompt := fmt.Sprintf("Please provide a detailed summary of the following text that is related to the query '%s'. ", query)
+	prompt := fmt.Sprintf("%s '%s'. ", config.summary_prompt, query)
 
 	for _, content := range contents {
 		prompt += "\n" + content
