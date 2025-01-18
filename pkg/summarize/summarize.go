@@ -6,6 +6,8 @@ import (
 	"fmt"
 
 	"github.com/sashabaranov/go-openai"
+
+	"ask-web/pkg/config"
 )
 
 type OpenAIClient interface {
@@ -13,18 +15,18 @@ type OpenAIClient interface {
 }
 
 // client is for testing purposes
-func Summarize(apiKey string, contents []string, query string, maxTokens int, client OpenAIClient) (string, error) {
+func Summarize(opts *config.Opts, apiKey string, contents []string, query string, client OpenAIClient) (string, error) {
 	if client == nil {
 		client = openai.NewClient(apiKey)
 	}
 	ctx := context.Background()
 
-	systemPrompt := fmt.Sprintf("Fit the response within %d tokens.", maxTokens)
-	prompt := buildPrompt(contents, query)
+	systemPrompt := fmt.Sprintf("Fit the response within %d tokens", opts.MaxTokens)
+	prompt := buildPrompt(contents, query, opts.SummaryPrompt)
 
 	req := openai.ChatCompletionRequest{
 		Model:     openai.GPT4oMini,
-		MaxTokens: maxTokens,
+		MaxTokens: opts.MaxTokens,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,
@@ -49,8 +51,8 @@ func Summarize(apiKey string, contents []string, query string, maxTokens int, cl
 	return resp.Choices[0].Message.Content, nil
 }
 
-func buildPrompt(contents []string, query string) string {
-	prompt := fmt.Sprintf("%s '%s'. ", config.summary_prompt, query)
+func buildPrompt(contents []string, query string, summaryPrompt string) string {
+	prompt := fmt.Sprintf("%s '%s'. ", summaryPrompt, query)
 
 	for _, content := range contents {
 		prompt += "\n" + content

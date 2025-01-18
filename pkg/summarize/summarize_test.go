@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/sashabaranov/go-openai"
+
+	"ask-web/pkg/config"
 )
 
 // mockOpenAIClient is a mock implementation of the OpenAI client.
@@ -78,7 +80,11 @@ func TestSummarize(t *testing.T) {
 				},
 			}
 
-			summary, err := Summarize(tc.apiKey, tc.contents, tc.query, tc.maxTokens, mockClient)
+			opts := config.Opts{
+				SummaryPrompt: "Please provide a detailed summary of the following text that is directly related to the query",
+				MaxTokens:     tc.maxTokens,
+			}
+			summary, err := Summarize(&opts, tc.apiKey, tc.contents, tc.query, mockClient)
 
 			if tc.expectedError != nil {
 				if err == nil || err.Error() != tc.expectedError.Error() {
@@ -124,7 +130,8 @@ func TestBuildPrompt(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			prompt := buildPrompt(tc.contents, tc.query)
+			sp := "Please provide a detailed summary of the following text that is related to the query"
+			prompt := buildPrompt(tc.contents, tc.query, sp)
 			if prompt != tc.expected {
 				t.Errorf("Expected prompt '%s', got '%s'", tc.expected, prompt)
 			}
