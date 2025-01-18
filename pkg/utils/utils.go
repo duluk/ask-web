@@ -2,12 +2,9 @@ package utils
 
 import (
 	"bufio"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/adrg/xdg"
 
 	"ask-web/pkg/search"
 	"github.com/microcosm-cc/bluemonday"
@@ -40,28 +37,21 @@ func DedupeResults(results []search.SearchResult) []search.SearchResult {
 	return dedupedResults
 }
 
-func SetupKeys() search.APIKeys {
+func SetupKeys(configDir string) search.APIKeys {
 	return search.APIKeys{
-		GoogleAPIKey:  getKey("GOOGLE_API_KEY"),
-		GoogleCSEID:   getKey("GOOGLE_CSE_ID"),
-		BingAPIKey:    getKey("BING_API_KEY"),
-		BingConfigKey: getKey("BING_CONFIG_KEY"),
-		OpenAIKey:     getKey("OPENAI_API_KEY"),
+		GoogleAPIKey:  getKey("GOOGLE_API_KEY", configDir),
+		GoogleCSEID:   getKey("GOOGLE_CSE_ID", configDir),
+		BingAPIKey:    getKey("BING_API_KEY", configDir),
+		BingConfigKey: getKey("BING_CONFIG_KEY", configDir),
+		OpenAIKey:     getKey("OPENAI_API_KEY", configDir),
 	}
 }
 
 // Return empty string if no key is found so that we can just check for the
 // existence of a key to decide if we should use it that engine
-func getKey(keyUpper string) string {
+func getKey(keyUpper string, configDir string) string {
 	key := os.Getenv(keyUpper)
 
-	configDir, err := xdg.ConfigFile("ask-web")
-	if err != nil {
-		log.Fatal("Error getting config directory:", err)
-	}
-
-	// TODO: this should attempt XDG_CONFIG_HOME first, then HOME
-	// -> actually there is an XDG package that can do that
 	if key == "" {
 		keyLower := strings.ToLower(keyUpper)
 		keyLower = strings.ReplaceAll(keyLower, "_", "-")
