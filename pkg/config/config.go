@@ -40,6 +40,7 @@ type Opts struct {
 	DBFileName  string
 	DBTable     string
 
+	QueryPrompt   string
 	SummaryPrompt string
 
 	FilteredURLs []string
@@ -77,6 +78,7 @@ func Initialize() (*Opts, error) {
 	viper.SetDefault("model.max_tokens", 420)
 	viper.SetDefault("model.num_results", 3)
 	viper.SetDefault("model.temperature", 0.7)
+	viper.SetDefault("model.query_prompt", "Turn this prompt into a search query, ensuring to retain its meaning")
 	viper.SetDefault("model.summary_prompt", "Please provide a detailed summary of the following text that is directly related to the query")
 	viper.SetDefault("logging.file", defaultLogFileName)
 	viper.SetDefault("database.file", filepath.Join(configDir, "ask-web.db"))
@@ -90,6 +92,7 @@ func Initialize() (*Opts, error) {
 	pflag.IntP("num-results", "n", viper.GetInt("model.num_results"), "How many web pages to check per search engine")
 	pflag.IntP("context-length", "l", viper.GetInt("model.context_length"), "Maximum context length")
 	pflag.StringP("database", "d", viper.GetString("database.file"), "Database file")
+	pflag.StringP("query-prompt", "q", viper.GetString("model.query_prompt"), "Prompt for generating search query from prompt")
 	pflag.StringP("summary-prompt", "S", viper.GetString("model.summary_prompt"), "System prompt for LLM")
 	pflag.IntP("max-tokens", "t", viper.GetInt("model.max_tokens"), "Maximum tokens to generate")
 	pflag.Float64P("temperature", "T", viper.GetFloat64("model.temperature"), "Temperature for summarization")
@@ -135,6 +138,7 @@ func Initialize() (*Opts, error) {
 		LogFileName:   viper.GetString("logging.file"),
 		DBFileName:    os.ExpandEnv(viper.GetString("database.file")),
 		DBTable:       viper.GetString("database.table"),
+		QueryPrompt:   viper.GetString("model.query_prompt"),
 		SummaryPrompt: viper.GetString("model.summary_prompt"),
 		NumResults:    viper.GetInt("model.num_results"),
 		MaxTokens:     viper.GetInt("model.max_tokens"),
