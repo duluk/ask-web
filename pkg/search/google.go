@@ -15,7 +15,7 @@ type googleSearchResult struct {
 	} `json:"items"`
 }
 
-func GoogleSearch(apiKey string, cseID string, query string, numResults int) ([]SearchResult, error) {
+func GoogleSearch(apiKey string, cseID string, query string, maxResults int, filter FilterFunc) ([]SearchResult, error) {
 	baseURL := "https://www.googleapis.com/customsearch/v1"
 	u, err := url.Parse(baseURL)
 	if err != nil {
@@ -25,7 +25,9 @@ func GoogleSearch(apiKey string, cseID string, query string, numResults int) ([]
 	q := u.Query()
 	q.Set("cx", cseID)
 	q.Set("q", query)
-	q.Set("num", fmt.Sprintf("%d", numResults))
+	n := float32(maxResults) * ExtraResultsFactor
+	// fmt.Printf("maxResults: %d, ExtraResultsFactor: %f, n: %f, int(n): %d\n", maxResults, ExtraResultsFactor, n, int(n))
+	q.Set("num", fmt.Sprintf("%d", int(n)))
 	u.RawQuery = q.Encode()
 
 	client := &http.Client{}
@@ -52,14 +54,21 @@ func GoogleSearch(apiKey string, cseID string, query string, numResults int) ([]
 		return nil, err
 	}
 
-	var searchResults []SearchResult
+	filteredResults := make([]SearchResult, 0, maxResults)
 	for _, item := range result.Items {
-		searchResults = append(searchResults, SearchResult{
+		r := SearchResult{
 			Title:   item.Title,
 			URL:     item.Link,
 			Snippet: item.Snippet,
-		})
+		}
+
+		if filter == nil || filter(r) {
+			filteredResults = append(filteredResults, r)
+			if len(filteredResults) == maxResults {
+				break
+			}
+		}
 	}
 
-	return searchResults, nil
+	return filteredResults, nil
 }

@@ -14,4 +14,7 @@ type APIKeys struct {
 	OpenAIKey     string
 }
 
+type FilterFunc func(SearchResult) bool
+
 const MaxTimeoutSeconds = 10
+const ExtraResultsFactor = 2.0

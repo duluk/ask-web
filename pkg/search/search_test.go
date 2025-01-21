@@ -34,7 +34,7 @@ func TestDDGSearch(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			results, err := DDGSearch(tt.query, tt.maxResults)
+			results, err := DDGSearch(tt.query, tt.maxResults, nil)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Search() error = %v, wantErr %v", err, tt.wantErr)

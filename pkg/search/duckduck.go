@@ -15,7 +15,7 @@ import (
 
 const DDGRegion = "wt-wt"
 
-func DDGSearch(query string, maxResults int) ([]SearchResult, error) {
+func DDGSearch(query string, maxResults int, filter FilterFunc) ([]SearchResult, error) {
 	if query == "" {
 		return nil, fmt.Errorf("search query cannot be empty")
 	}
@@ -60,7 +60,7 @@ func DDGSearch(query string, maxResults int) ([]SearchResult, error) {
 	}
 	f.Close()
 
-	results, err := extractDDGResults(string(body), maxResults)
+	results, err := extractDDGResults(string(body), maxResults, filter)
 	if err != nil {
 		return nil, fmt.Errorf("failed to extract results: %v", err)
 	}
@@ -68,30 +68,29 @@ func DDGSearch(query string, maxResults int) ([]SearchResult, error) {
 	return results, nil
 }
 
-func extractDDGResults(htmlContent string, maxResults int) ([]SearchResult, error) {
+func extractDDGResults(htmlContent string, maxResults int, filter FilterFunc) ([]SearchResult, error) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
 	if err != nil {
 		return nil, err
 	}
 
-	var results []SearchResult
+	var filteredResults []SearchResult
 
-	numResults := 0
 	doc.Find(".result").Each(func(i int, s *goquery.Selection) {
-		if numResults >= maxResults {
-			return
-		}
-
 		result := SearchResult{}
 
 		result.URL, _ = s.Find(".result__url").Attr("href")
 		result.Title = s.Find(".result__title").Text()
 		result.Snippet = s.Find(".result__snippet").Text()
 
-		results = append(results, result)
-
-		numResults++
+		if filter == nil || filter(result) {
+			filteredResults = append(filteredResults, result)
+		}
 	})
 
-	return results, nil
+	if len(filteredResults) < maxResults {
+		return filteredResults, nil
+	}
+
+	return filteredResults[:maxResults], nil
 }

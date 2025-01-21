@@ -42,6 +42,8 @@ type Opts struct {
 
 	SummaryPrompt string
 
+	FilteredURLs []string
+
 	NumResults int
 	MaxTokens  int
 
@@ -55,7 +57,6 @@ func Initialize() (*Opts, error) {
 	if err != nil {
 		log.Fatal("Error getting config directory:", err)
 	}
-	// configDir := filepath.Join(os.Getenv("HOME"), ".config", "ask-web")
 
 	// TODO: though I've put so much effort into the config file to read it
 	// first so that the values can be used as defaults (eg in --help), I'm
@@ -130,6 +131,8 @@ func Initialize() (*Opts, error) {
 		Model:         pflag.Lookup("model").Value.String(),
 		ContextLength: viper.GetInt("model.context_length"),
 		Temperature:   viper.GetFloat64("model.temperature"),
+		FilteredURLs:  []string{"wikipedia.org", "britannica.com"},
+		LogFileName:   viper.GetString("logging.file"),
 		DBFileName:    os.ExpandEnv(viper.GetString("database.file")),
 		DBTable:       viper.GetString("database.table"),
 		SummaryPrompt: viper.GetString("model.summary_prompt"),

@@ -1,11 +1,9 @@
 package main
 
-// TODO: don't use wikipedia for results; too many tokens
-
 import (
 	"fmt"
-	"log"
 	"os"
+	"strings"
 
 	"github.com/spf13/pflag"
 
@@ -21,13 +19,29 @@ import (
 
 // TODO:
 // 1. Add a flag to specify whether other search engines should be used
-// 2. Add a flag to specify the number of search results to use per search engine?
+// 2. Don't use wikipedia for results; too many tokens
+// 3. Use the LLM to generate a good search prompt based on the query
+//    - 'Turn this prompt into a search query, ensuring to retain its meaning: '
+// 4. If download fails, save the error to a file or something so the user can
+//    review and add the URL to the filter list if necessary
 
 func main() {
 	opts, err := config.Initialize()
 	if err != nil {
-		logger.Fatal("Error initializing config:", err)
+		fmt.Fprintf(os.Stderr, "Error initializing config: %s", err)
 		os.Exit(1)
+	}
+
+	logger.Init(opts.LogFileName)
+
+	resultFilter := func(result search.SearchResult) bool {
+		for _, url := range opts.FilteredURLs {
+			if strings.Contains(result.URL, url) {
+				return false
+			}
+		}
+
+		return true
 	}
 
 	var query string
@@ -52,9 +66,19 @@ func main() {
 	}
 	defer db.Close()
 
+	var ddgResults []search.SearchResult
+	ddgResults, err = search.DDGSearch(query, opts.NumResults, resultFilter)
+	if err != nil {
+		logger.Fatal("Error during web search:", err)
+	}
+	logger.Info("DuckDuckGo Results:")
+	for _, result := range ddgResults {
+		fmt.Printf("\t%s\n", result.URL)
+	}
+
 	var googleResults []search.SearchResult
 	if apiKeys.GoogleAPIKey != "" && apiKeys.GoogleCSEID != "" {
-		googleResults, err = search.GoogleSearch(apiKeys.GoogleAPIKey, apiKeys.GoogleCSEID, query, opts.NumResults)
+		googleResults, err = search.GoogleSearch(apiKeys.GoogleAPIKey, apiKeys.GoogleCSEID, query, opts.NumResults, resultFilter)
 		if err != nil {
 			logger.Fatal("Error during web search:", err)
 		}
@@ -66,7 +90,7 @@ func main() {
 
 	var bingResults []search.SearchResult
 	if apiKeys.BingAPIKey != "" && apiKeys.BingConfigKey != "" {
-		bingResults, err = search.BingSearch(apiKeys.BingAPIKey, apiKeys.BingConfigKey, query, opts.NumResults)
+		bingResults, err = search.BingSearch(apiKeys.BingAPIKey, apiKeys.BingConfigKey, query, opts.NumResults, resultFilter)
 		if err != nil {
 			logger.Fatal("Error during web search:", err)
 		}
@@ -76,7 +100,7 @@ func main() {
 		logger.Info(fmt.Sprintf("\t%s\n", result.URL))
 	}
 
-	results := append(googleResults, ddgResults...)
+	results := append(ddgResults, googleResults...)
 	results = append(results, bingResults...)
 	results = utils.DedupeResults(results)
 	logger.Info("Final Results:")
