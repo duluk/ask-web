@@ -37,6 +37,7 @@ type Opts struct {
 	Temperature   float64
 
 	LogFileName string
+	LogStderr   bool
 	DBFileName  string
 	DBTable     string
 
@@ -99,6 +100,7 @@ func Initialize() (*Opts, error) {
 	pflag.BoolP("version", "v", false, "Print version and exit")
 	pflag.BoolP("full-version", "V", false, "Print full version information and exit")
 	pflag.BoolP("dump-config", "", false, "Dump configuration and exit")
+	pflag.BoolP("stderr", "", false, "Log to stderr in addition to file")
 	pflag.StringP("search", "s", "", "Search for a response")
 	pflag.IntP("show", "", 0, "Show response with ID")
 	pflag.StringP("width", "", "", "Width of the screen for linewrap")
@@ -107,6 +109,7 @@ func Initialize() (*Opts, error) {
 	// Bind all flags to viper
 	viper.BindPFlag("model.num_results", pflag.Lookup("context"))
 	viper.BindPFlag("dump-config", pflag.Lookup("dump-config"))
+	viper.BindPFlag("stderr", pflag.Lookup("stderr"))
 	viper.BindPFlag("show-keys", pflag.Lookup("show-keys"))
 	viper.BindPFlag("search", pflag.Lookup("search"))
 	viper.BindPFlag("show", pflag.Lookup("show"))
@@ -136,6 +139,7 @@ func Initialize() (*Opts, error) {
 		Temperature:   viper.GetFloat64("model.temperature"),
 		FilteredURLs:  []string{"wikipedia.org", "britannica.com"},
 		LogFileName:   viper.GetString("logging.file"),
+		LogStderr:     viper.GetBool("stderr"),
 		DBFileName:    os.ExpandEnv(viper.GetString("database.file")),
 		DBTable:       viper.GetString("database.table"),
 		QueryPrompt:   viper.GetString("model.query_prompt"),

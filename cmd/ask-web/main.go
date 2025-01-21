@@ -24,7 +24,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	logger.Init(opts.LogFileName)
+	logger.Init(opts)
 
 	resultFilter := func(result search.SearchResult) bool {
 		for _, url := range opts.FilteredURLs {
@@ -63,6 +63,7 @@ func main() {
 	}
 	defer db.Close()
 
+	fmt.Println("Gathering search results for query:", query)
 	var ddgResults []search.SearchResult
 	ddgResults, err = search.DDGSearch(query, opts.NumResults, resultFilter)
 	if err != nil {
@@ -70,7 +71,7 @@ func main() {
 	}
 	logger.Info("DuckDuckGo Results:")
 	for _, result := range ddgResults {
-		fmt.Printf("\t%s\n", result.URL)
+		logger.Info(fmt.Sprintf("\t%s\n", result.URL))
 	}
 
 	var googleResults []search.SearchResult
@@ -105,6 +106,7 @@ func main() {
 		logger.Info(result.URL)
 	}
 
+	fmt.Println("Downloading search results...")
 	var contents []string
 	for _, result := range results {
 		logger.Info("Downloading:", result.URL)

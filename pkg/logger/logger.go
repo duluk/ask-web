@@ -4,16 +4,22 @@ import (
 	"io"
 	"log"
 	"os"
+
+	"ask-web/pkg/config"
 )
 
-func Init(logFile string) {
-	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+func Init(opts *config.Opts) {
+	file, err := os.OpenFile(opts.LogFileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer file.Close()
 
-	multiWriter := io.MultiWriter(os.Stderr, file)
+	var multiWriter io.Writer
+	if opts.LogStderr {
+		multiWriter = io.MultiWriter(file, os.Stderr)
+	} else {
+		multiWriter = file
+	}
 
 	log.SetOutput(multiWriter)
 
