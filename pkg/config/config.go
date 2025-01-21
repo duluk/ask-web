@@ -36,8 +36,9 @@ type Opts struct {
 	ContextLength int
 	Temperature   float64
 
-	DBFileName string
-	DBTable    string
+	LogFileName string
+	DBFileName  string
+	DBTable     string
 
 	SummaryPrompt string
 
@@ -66,6 +67,8 @@ func Initialize() (*Opts, error) {
 		return nil, fmt.Errorf("error setting up config: %w", err)
 	}
 
+	defaultLogFileName := filepath.Join(configDir, "ask-web.log")
+
 	width, height := determineScreenSize()
 
 	viper.SetDefault("model.default", "claude")
@@ -74,6 +77,7 @@ func Initialize() (*Opts, error) {
 	viper.SetDefault("model.num_results", 3)
 	viper.SetDefault("model.temperature", 0.7)
 	viper.SetDefault("model.summary_prompt", "Please provide a detailed summary of the following text that is directly related to the query")
+	viper.SetDefault("logging.file", defaultLogFileName)
 	viper.SetDefault("database.file", filepath.Join(configDir, "ask-web.db"))
 	viper.SetDefault("database.table", "conversations")
 	viper.SetDefault("screen.width", width)
