@@ -9,9 +9,7 @@ import (
 	"time"
 )
 
-const (
-	BaseURL = "https://api.bing.microsoft.com/v7.0/custom/search"
-)
+const BaseURL = "https://api.bing.microsoft.com/v7.0/custom/search"
 
 type SearchResponse struct {
 	WebPages struct {
@@ -19,14 +17,16 @@ type SearchResponse struct {
 	} `json:"webPages"`
 }
 
-func BingSearch(apiKey string, configKey string, query string, maxResults int) ([]SearchResult, error) {
+func BingSearch(apiKey string, configKey string, query string, maxResults int, filter FilterFunc) ([]SearchResult, error) {
 	client := &http.Client{
 		Timeout: time.Duration(MaxTimeoutSeconds) * time.Second,
 	}
 
 	params := url.Values{}
 	params.Add("q", query)
-	params.Add("count", fmt.Sprintf("%d", maxResults))
+	n := float32(maxResults) * ExtraResultsFactor
+	// fmt.Printf("maxResults: %d, ExtraResultsFactor: %f, n: %f, int(n): %d\n", maxResults, ExtraResultsFactor, n, int(n))
+	params.Add("count", fmt.Sprintf("%d", int(n)))
 	params.Add("customConfig", configKey)
 	params.Add("safeSearch", "Off")
 
@@ -56,5 +56,15 @@ func BingSearch(apiKey string, configKey string, query string, maxResults int) (
 		return nil, fmt.Errorf("error decoding response: %w", err)
 	}
 
-	return searchResp.WebPages.Value, nil
+	filteredResults := make([]SearchResult, 0, maxResults)
+	for _, result := range searchResp.WebPages.Value {
+		if filter == nil || filter(result) {
+			filteredResults = append(filteredResults, result)
+			if len(filteredResults) == maxResults {
+				break
+			}
+		}
+	}
+
+	return filteredResults, nil
 }
