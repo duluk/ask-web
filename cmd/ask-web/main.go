@@ -17,14 +17,6 @@ import (
 	"ask-web/pkg/utils"
 )
 
-// TODO:
-// 1. Add a flag to specify whether other search engines should be used
-// 2. Don't use wikipedia for results; too many tokens
-// 3. Use the LLM to generate a good search prompt based on the query
-//    - 'Turn this prompt into a search query, ensuring to retain its meaning: '
-// 4. If download fails, save the error to a file or something so the user can
-//    review and add the URL to the filter list if necessary
-
 func main() {
 	opts, err := config.Initialize()
 	if err != nil {
