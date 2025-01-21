@@ -36,11 +36,6 @@ func main() {
 		return true
 	}
 
-	var query string
-	if pflag.NArg() > 0 {
-		query = pflag.Arg(0)
-	}
-
 	apiKeys := utils.SetupKeys(opts.ConfigDir)
 
 	if opts.ShowAPIKeys {
@@ -51,6 +46,16 @@ func main() {
 		fmt.Println("CSE ID:", apiKeys.GoogleCSEID)
 		fmt.Println("OpenAI Key:", apiKeys.OpenAIKey)
 	}
+
+	var query string
+	if pflag.NArg() > 0 {
+		query, err = search.CreateSearchQuery(opts, apiKeys.OpenAIKey, pflag.Arg(0))
+		if err != nil {
+			query = pflag.Arg(0)
+		}
+	}
+	logger.Debug("Original prompt: ", pflag.Arg(0))
+	logger.Debug("Search query: ", query)
 
 	db, err := database.InitializeDB(opts.DBFileName, opts.DBTable)
 	if err != nil {
