@@ -124,6 +124,9 @@ func Initialize() (*Opts, error) {
 	viper.BindPFlag("version", pflag.Lookup("version"))
 	viper.BindPFlag("full-version", pflag.Lookup("full-version"))
 
+	viper.Set("logging.file", os.ExpandEnv(viper.GetString("logging.file")))
+	viper.Set("database.file", os.ExpandEnv(viper.GetString("database.file")))
+
 	pflag.Parse()
 
 	if handleVersionFlags() {
