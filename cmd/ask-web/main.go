@@ -24,7 +24,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	logger.Init(opts)
+	err = logger.Init(opts)
+	if err != nil {
+		panic(err)
+	}
+	log := logger.GetLogger()
 
 	if opts.DumpConfig {
 		config.DumpConfig(opts)
@@ -58,13 +62,13 @@ func main() {
 		if err != nil {
 			query = pflag.Arg(0)
 		}
+		log.Info("Original prompt: ", pflag.Arg(0))
+		log.Info("Generated query: ", query)
 	}
-	logger.Debug("Original prompt: ", pflag.Arg(0))
-	logger.Debug("Search query: ", query)
 
 	db, err := database.InitializeDB(opts.DBFileName, opts.DBTable)
 	if err != nil {
-		logger.Fatal("Error opening database: ", err)
+		log.Fatal("Error opening database: ", err)
 	}
 	defer db.Close()
 
@@ -72,52 +76,45 @@ func main() {
 	var ddgResults []search.SearchResult
 	ddgResults, err = search.DDGSearch(query, opts.NumResults, resultFilter)
 	if err != nil {
-		logger.Fatal("Error during web search:", err)
+		log.Fatal("Error during web search:", err)
 	}
-	logger.Info("DuckDuckGo Results:")
 	for _, result := range ddgResults {
-		logger.Info(fmt.Sprintf("\t%s\n", result.URL))
+		log.Info("DuckDuckGo URL:", result.URL)
 	}
 
 	var googleResults []search.SearchResult
 	if apiKeys.GoogleAPIKey != "" && apiKeys.GoogleCSEID != "" {
 		googleResults, err = search.GoogleSearch(apiKeys.GoogleAPIKey, apiKeys.GoogleCSEID, query, opts.NumResults, resultFilter)
 		if err != nil {
-			logger.Fatal("Error during web search:", err)
+			log.Fatal("Error during web search:", err)
 		}
 	}
-	logger.Info("Google Results:")
 	for _, result := range googleResults {
-		logger.Info(fmt.Sprintf("\t%s\n", result.URL))
+		log.Info("Google URL:", result.URL)
 	}
 
 	var bingResults []search.SearchResult
 	if apiKeys.BingAPIKey != "" && apiKeys.BingConfigKey != "" {
 		bingResults, err = search.BingSearch(apiKeys.BingAPIKey, apiKeys.BingConfigKey, query, opts.NumResults, resultFilter)
 		if err != nil {
-			logger.Fatal("Error during web search:", err)
+			log.Fatal("Error during web search:", err)
 		}
 	}
-	logger.Info("Bing Results:")
 	for _, result := range bingResults {
-		logger.Info(fmt.Sprintf("\t%s\n", result.URL))
+		log.Info("Bing URL:", result.URL)
 	}
 
 	results := append(ddgResults, googleResults...)
 	results = append(results, bingResults...)
 	results = utils.DedupeResults(results)
-	logger.Info("Final Results:")
-	for _, result := range results {
-		logger.Info(result.URL)
-	}
 
 	fmt.Println("Downloading search results...")
 	var contents []string
 	for _, result := range results {
-		logger.Info("Downloading:", result.URL)
+		log.Info("Downloading unique URL:", result.URL)
 		content, err := download.Page(result.URL)
 		if err != nil {
-			logger.Error("Error downloading page: ", err.Error())
+			log.Error(fmt.Sprintf("Error downloading %s: %s", result.URL, err.Error()))
 			continue
 		}
 		contents = append(contents, content)
@@ -134,10 +131,9 @@ func main() {
 	fmt.Println("Summarizing content...")
 	summary, err := summarize.Summarize(opts, apiKeys.OpenAIKey, cleanedContents, query, noOpClient)
 	if err != nil {
-		logger.Fatal("Error during summarization:", err)
+		log.Fatal("Error during summarization:", err)
 	}
 
-	logger.Info("Saving search results to database...")
 	db.SaveSearchResults(query, results, summary)
 
 	wrapper := linewrap.NewLineWrapper(80, 4, os.Stdout)

@@ -3,6 +3,8 @@ package database
 import (
 	"database/sql"
 	"strconv"
+
+	"ask-web/pkg/logger"
 )
 
 const SchemaVersion = 3
@@ -55,11 +57,14 @@ func applySchema(db *sql.DB, dbTable string, schemaVersion int) error {
 		return err
 	}
 
+	logger.GetLogger().Info("Applied schema version ", schemaVersion)
+
 	return nil
 }
 
 func setSchemaVersion(db *sql.DB, schemaVersion int) error {
 	verStr := strconv.Itoa(schemaVersion)
+	logger.GetLogger().Info("Setting schema version to ", verStr)
 	_, err := db.Exec(`PRAGMA user_version = ` + verStr)
 	return err
 }

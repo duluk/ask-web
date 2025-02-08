@@ -261,6 +261,7 @@ func DumpConfig(cfg *Opts) {
 	fmt.Printf("Temperature: %f\n", cfg.Temperature)
 	fmt.Printf("DBFileName: %s\n", cfg.DBFileName)
 	fmt.Printf("DBTable: %s\n", cfg.DBTable)
+	fmt.Printf("LogFileName: %s\n", cfg.LogFileName)
 	fmt.Printf("SummaryPrompt: %s\n", cfg.SummaryPrompt)
 	fmt.Printf("ScreenWidth: %d\n", cfg.ScreenWidth)
 	fmt.Printf("ScreenHeight: %d\n", cfg.ScreenHeight)
