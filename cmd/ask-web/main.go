@@ -111,10 +111,10 @@ func main() {
 	fmt.Println("Downloading search results...")
 	var contents []string
 	for _, result := range results {
-		logger.Info("Downloading:", result.URL)
+		log.Info("Downloading unique URL:", result.URL)
 		content, err := download.Page(result.URL)
 		if err != nil {
-			logger.Error("Error downloading page: ", err.Error())
+			log.Error(fmt.Sprintf("Error downloading %s: %s", result.URL, err.Error()))
 			continue
 		}
 		contents = append(contents, content)
