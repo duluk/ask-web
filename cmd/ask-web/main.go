@@ -76,44 +76,37 @@ func main() {
 	var ddgResults []search.SearchResult
 	ddgResults, err = search.DDGSearch(query, opts.NumResults, resultFilter)
 	if err != nil {
-		logger.Fatal("Error during web search:", err)
+		log.Fatal("Error during web search:", err)
 	}
-	logger.Info("DuckDuckGo Results:")
 	for _, result := range ddgResults {
-		logger.Info(fmt.Sprintf("\t%s\n", result.URL))
+		log.Info("DuckDuckGo URL:", result.URL)
 	}
 
 	var googleResults []search.SearchResult
 	if apiKeys.GoogleAPIKey != "" && apiKeys.GoogleCSEID != "" {
 		googleResults, err = search.GoogleSearch(apiKeys.GoogleAPIKey, apiKeys.GoogleCSEID, query, opts.NumResults, resultFilter)
 		if err != nil {
-			logger.Fatal("Error during web search:", err)
+			log.Fatal("Error during web search:", err)
 		}
 	}
-	logger.Info("Google Results:")
 	for _, result := range googleResults {
-		logger.Info(fmt.Sprintf("\t%s\n", result.URL))
+		log.Info("Google URL:", result.URL)
 	}
 
 	var bingResults []search.SearchResult
 	if apiKeys.BingAPIKey != "" && apiKeys.BingConfigKey != "" {
 		bingResults, err = search.BingSearch(apiKeys.BingAPIKey, apiKeys.BingConfigKey, query, opts.NumResults, resultFilter)
 		if err != nil {
-			logger.Fatal("Error during web search:", err)
+			log.Fatal("Error during web search:", err)
 		}
 	}
-	logger.Info("Bing Results:")
 	for _, result := range bingResults {
-		logger.Info(fmt.Sprintf("\t%s\n", result.URL))
+		log.Info("Bing URL:", result.URL)
 	}
 
 	results := append(ddgResults, googleResults...)
 	results = append(results, bingResults...)
 	results = utils.DedupeResults(results)
-	logger.Info("Final Results:")
-	for _, result := range results {
-		logger.Info(result.URL)
-	}
 
 	fmt.Println("Downloading search results...")
 	var contents []string
