@@ -26,6 +26,11 @@ func main() {
 
 	logger.Init(opts)
 
+	if opts.DumpConfig {
+		config.DumpConfig(opts)
+		os.Exit(0)
+	}
+
 	resultFilter := func(result search.SearchResult) bool {
 		for _, url := range opts.FilteredURLs {
 			if strings.Contains(result.URL, url) {

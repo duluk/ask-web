@@ -89,7 +89,7 @@ func Initialize() (*Opts, error) {
 
 	// Now define the rest of the flags using values from viper (which now has
 	// config file values)
-	pflag.StringP("model", "m", viper.GetString("model.default"), "Which LLM to use for summary (claude|chatgpt|gemini|grok|deepseek)")
+	pflag.StringP("model", "m", viper.GetString("model.default"), "Which LLM to use for summary (chatgpt|deepseek)")
 	pflag.IntP("num-results", "n", viper.GetInt("model.num_results"), "How many web pages to check per search engine")
 	pflag.IntP("context-length", "l", viper.GetInt("model.context_length"), "Maximum context length")
 	pflag.StringP("database", "d", viper.GetString("database.file"), "Database file")
@@ -123,6 +123,9 @@ func Initialize() (*Opts, error) {
 
 	viper.BindPFlag("version", pflag.Lookup("version"))
 	viper.BindPFlag("full-version", pflag.Lookup("full-version"))
+
+	viper.Set("logging.file", os.ExpandEnv(viper.GetString("logging.file")))
+	viper.Set("database.file", os.ExpandEnv(viper.GetString("database.file")))
 
 	pflag.Parse()
 

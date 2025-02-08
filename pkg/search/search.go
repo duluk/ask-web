@@ -33,7 +33,7 @@ const ExtraResultsFactor = 2.0
 func CreateSearchQuery(opts *config.Opts, apiKey string, query string) (string, error) {
 	client := openai.NewClient(apiKey)
 
-	systemPrompt := "You are generating a query to pass to a search engine. Return only the query, do not generate extraneous information. Try not to include dates unless in the prompt itself; your knowledge base it cutoff and you may get it wrong."
+	systemPrompt := "You are generating a query to pass to a search engine. Return only the query, do not generate extraneous information. Try not to include dates unless in the prompt itself; your knowledge base is cutoff and you may get it wrong."
 	prompt := fmt.Sprintf("%s: '%s'", opts.QueryPrompt, query)
 
 	ctx := context.Background()
