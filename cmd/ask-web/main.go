@@ -24,7 +24,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	logger.Init(opts)
+	err = logger.Init(opts)
+	if err != nil {
+		panic(err)
+	}
+	log := logger.GetLogger()
 
 	if opts.DumpConfig {
 		config.DumpConfig(opts)
