@@ -62,13 +62,13 @@ func main() {
 		if err != nil {
 			query = pflag.Arg(0)
 		}
+		log.Info("Original prompt: ", pflag.Arg(0))
+		log.Info("Generated query: ", query)
 	}
-	logger.Debug("Original prompt: ", pflag.Arg(0))
-	logger.Debug("Search query: ", query)
 
 	db, err := database.InitializeDB(opts.DBFileName, opts.DBTable)
 	if err != nil {
-		logger.Fatal("Error opening database: ", err)
+		log.Fatal("Error opening database: ", err)
 	}
 	defer db.Close()
 
@@ -138,10 +138,9 @@ func main() {
 	fmt.Println("Summarizing content...")
 	summary, err := summarize.Summarize(opts, apiKeys.OpenAIKey, cleanedContents, query, noOpClient)
 	if err != nil {
-		logger.Fatal("Error during summarization:", err)
+		log.Fatal("Error during summarization:", err)
 	}
 
-	logger.Info("Saving search results to database...")
 	db.SaveSearchResults(query, results, summary)
 
 	wrapper := linewrap.NewLineWrapper(80, 4, os.Stdout)
