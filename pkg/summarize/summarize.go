@@ -25,8 +25,10 @@ func Summarize(opts *config.Opts, apiKey string, contents []string, query string
 	prompt := buildPrompt(contents, query, opts.SummaryPrompt)
 
 	req := openai.ChatCompletionRequest{
-		Model:     openai.GPT4oMini,
-		MaxTokens: opts.MaxTokens,
+		// At some point, the model will be configurable
+		Model:       openai.GPT4oMini,
+		MaxTokens:   opts.MaxTokens,
+		Temperature: float32(opts.Temperature),
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,
