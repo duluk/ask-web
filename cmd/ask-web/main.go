@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 
@@ -62,6 +63,7 @@ func main() {
 		if err != nil {
 			query = pflag.Arg(0)
 		}
+		query = url.QueryEscape(query)
 		log.Info("Original prompt: ", pflag.Arg(0))
 		log.Info("Generated query: ", query)
 	}
