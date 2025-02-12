@@ -141,7 +141,7 @@ func Initialize() (*Opts, error) {
 		ContextLength: viper.GetInt("model.context_length"),
 		Temperature:   viper.GetFloat64("model.temperature"),
 		// These articles are too large
-		FilteredURLs:  []string{"wikipedia.org", "britannica.com", "pdf"},
+		FilteredURLs:  []string{"wikipedia.org", "britannica.com", "pdf", "ChangeLog"},
 		LogFileName:   viper.GetString("logging.file"),
 		LogStderr:     viper.GetBool("stderr"),
 		DBFileName:    os.ExpandEnv(viper.GetString("database.file")),
