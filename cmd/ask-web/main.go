@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"os"
@@ -134,7 +135,9 @@ func main() {
 	// used for testing. I'm not sure I like this method.
 	var noOpClient summarize.OpenAIClient
 	fmt.Println("Summarizing content...")
-	summary, err := summarize.Summarize(opts, apiKeys.OpenAIKey, cleanedContents, query, noOpClient)
+
+	summarizer := summarize.NewOpenAISummarizer(apiKeys.OpenAIKey, opts, noOpClient)
+	summary, err := summarizer.Summarize(context.Background(), cleanedContents, query)
 	if err != nil {
 		log.Fatal("Error during summarization:", err)
 	}
