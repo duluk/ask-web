@@ -86,6 +86,7 @@ func Initialize() (*Opts, error) {
 	viper.SetDefault("database.table", "conversations")
 	viper.SetDefault("screen.width", width)
 	viper.SetDefault("screen.height", height)
+	viper.SetDefault("filter", []string{"wikipedia.org", "britannica.com"})
 
 	// Now define the rest of the flags using values from viper (which now has
 	// config file values)
@@ -140,8 +141,7 @@ func Initialize() (*Opts, error) {
 		Model:         pflag.Lookup("model").Value.String(),
 		ContextLength: viper.GetInt("model.context_length"),
 		Temperature:   viper.GetFloat64("model.temperature"),
-		// These articles are too large
-		FilteredURLs:  []string{"wikipedia.org", "britannica.com", "pdf", "ChangeLog"},
+		FilteredURLs:  viper.GetStringSlice("filter"),
 		LogFileName:   viper.GetString("logging.file"),
 		LogStderr:     viper.GetBool("stderr"),
 		DBFileName:    os.ExpandEnv(viper.GetString("database.file")),
