@@ -63,7 +63,10 @@ func main() {
 		if err != nil {
 			query = pflag.Arg(0)
 		}
+
+		query = strings.Trim(query, "\"")
 		query = url.QueryEscape(query)
+
 		log.Info("Original prompt: ", pflag.Arg(0))
 		log.Info("Generated query: ", query)
 	}
