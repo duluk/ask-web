@@ -19,7 +19,7 @@ func (m *mockOpenAIClient) CreateChatCompletion(ctx context.Context, request ope
 	return m.createChatCompletionFunc(ctx, request)
 }
 
-func TestSummarize(t *testing.T) {
+func TestOpenAISummarizer(t *testing.T) {
 	testCases := []struct {
 		name            string
 		apiKey          string
@@ -73,18 +73,19 @@ func TestSummarize(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Create a mock client with the desired behavior
 			mockClient := &mockOpenAIClient{
 				createChatCompletionFunc: func(ctx context.Context, request openai.ChatCompletionRequest) (openai.ChatCompletionResponse, error) {
 					return tc.mockResponse, tc.mockError
 				},
 			}
 
-			opts := config.Opts{
+			opts := &config.Opts{
 				SummaryPrompt: "Please provide a detailed summary of the following text that is directly related to the query",
 				MaxTokens:     tc.maxTokens,
 			}
-			summary, err := Summarize(&opts, tc.apiKey, tc.contents, tc.query, mockClient)
+
+			summarizer := NewOpenAISummarizer(tc.apiKey, opts, mockClient)
+			summary, err := summarizer.Summarize(context.Background(), tc.contents, tc.query)
 
 			if tc.expectedError != nil {
 				if err == nil || err.Error() != tc.expectedError.Error() {
