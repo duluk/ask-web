@@ -51,12 +51,15 @@ func main() {
 
 	if opts.ShowAPIKeys {
 		fmt.Println("<== API keys ==>")
-		fmt.Println("Gemini API Key:", apiKeys.GeminiAPIKey)
-		fmt.Println("Google API Key:", apiKeys.GoogleAPIKey)
-		fmt.Println("Bing API Key:", apiKeys.BingAPIKey)
+		fmt.Println("Gemini API Key: ", apiKeys.GeminiAPIKey)
+		fmt.Println("Google API Key: ", apiKeys.GoogleAPIKey)
+		fmt.Println("Google CSE ID:  ", apiKeys.GoogleCSEID)
+		fmt.Println("---")
+		fmt.Println("Bing API Key:   ", apiKeys.BingAPIKey)
 		fmt.Println("Bing Config Key:", apiKeys.BingConfigKey)
-		fmt.Println("CSE ID:", apiKeys.GoogleCSEID)
+		fmt.Println("---")
 		fmt.Println("OpenAI Key:", apiKeys.OpenAIKey)
+		os.Exit(0)
 	}
 
 	var query string
