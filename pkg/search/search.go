@@ -17,6 +17,7 @@ type SearchResult struct {
 }
 
 type APIKeys struct {
+	GeminiAPIKey  string
 	GoogleAPIKey  string
 	GoogleCSEID   string
 	BingAPIKey    string
