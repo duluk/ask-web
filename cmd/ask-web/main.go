@@ -51,6 +51,7 @@ func main() {
 
 	if opts.ShowAPIKeys {
 		fmt.Println("<== API keys ==>")
+		fmt.Println("Gemini API Key:", apiKeys.GeminiAPIKey)
 		fmt.Println("Google API Key:", apiKeys.GoogleAPIKey)
 		fmt.Println("Bing API Key:", apiKeys.BingAPIKey)
 		fmt.Println("Bing Config Key:", apiKeys.BingConfigKey)
