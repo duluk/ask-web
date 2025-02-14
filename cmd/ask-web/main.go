@@ -132,12 +132,22 @@ func main() {
 		cleanedContents = append(cleanedContents, utils.CleanText(content))
 	}
 
-	// Set noOpClient to nil to use the real OpenAI API; the mock client is
-	// used for testing. I'm not sure I like this method.
-	var noOpClient summarize.OpenAIClient
 	fmt.Println("Summarizing content...")
 
-	summarizer := summarize.NewOpenAISummarizer(apiKeys.OpenAIKey, opts, noOpClient)
+	// Determine which API key to use based on the model
+	var apiKey string
+	switch opts.Model {
+	case summarize.ModelOpenAI:
+		apiKey = apiKeys.OpenAIKey
+	case summarize.ModelGoogle:
+		apiKey = apiKeys.GeminiAPIKey
+	}
+
+	summarizer, err := summarize.NewSummarizer(opts.Model, apiKey, opts)
+	if err != nil {
+		log.Fatal("Error creating summarizer:", err)
+	}
+
 	summary, err := summarizer.Summarize(context.Background(), cleanedContents, query)
 	if err != nil {
 		log.Fatal("Error during summarization:", err)
