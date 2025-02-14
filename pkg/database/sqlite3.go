@@ -2,7 +2,7 @@ package database
 
 // Use this module like this:
 // db := NewDB("path/to/database.db")
-// SaveSearchResults("query", searchResults, "summary")
+// db.SaveSearchResults("query", searchResults, "summary")
 
 import (
 	"database/sql"
