@@ -6,7 +6,9 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/spf13/pflag"
 
 	"ask-web/pkg/config"
@@ -118,7 +120,10 @@ func main() {
 	results = append(results, bingResults...)
 	results = utils.DedupeResults(results)
 
+	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
+
 	fmt.Println("Downloading search results...")
+	s.Start()
 	var contents []string
 	for _, result := range results {
 		log.Info("Downloading unique URL:", result.URL)
@@ -129,6 +134,7 @@ func main() {
 		}
 		contents = append(contents, content)
 	}
+	s.Stop()
 
 	var cleanedContents []string
 	for _, content := range contents {
@@ -136,6 +142,7 @@ func main() {
 	}
 
 	fmt.Println("Summarizing content...")
+	s.Start()
 
 	// Determine which API key to use based on the model
 	var apiKey string
@@ -155,6 +162,8 @@ func main() {
 	if err != nil {
 		log.Fatal("Error during summarization:", err)
 	}
+
+	s.Stop()
 
 	db.SaveSearchResults(query, results, summary)
 
