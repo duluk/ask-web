@@ -84,7 +84,12 @@ func main() {
 	}
 	defer db.Close()
 
-	fmt.Println("Gathering search results for query:", query)
+	unescapedQuery, err := url.QueryUnescape(query)
+	if err != nil {
+		log.Fatal("Error unescaping query:", err)
+	}
+
+	fmt.Println("Gathering search results for query:", unescapedQuery)
 	var ddgResults []search.SearchResult
 	ddgResults, err = search.DDGSearch(query, opts.NumResults, resultFilter)
 	if err != nil {
