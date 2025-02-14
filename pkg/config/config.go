@@ -104,6 +104,7 @@ func Initialize() (*Opts, error) {
 	pflag.BoolP("stderr", "", false, "Log to stderr in addition to file")
 	pflag.StringP("search", "s", "", "Search for a response")
 	pflag.IntP("show", "", 0, "Show response with ID")
+	pflag.BoolP("show-keys", "", false, "Show API keys")
 	pflag.StringP("width", "", "", "Width of the screen for linewrap")
 	pflag.StringP("height", "", "", "Height of the screen for linewrap")
 
