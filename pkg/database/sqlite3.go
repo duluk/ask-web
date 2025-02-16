@@ -76,6 +76,53 @@ func (sqlDB *SearchDB) SaveSearchResults(query string, results []search.SearchRe
 	return nil
 }
 
+func (sqlDB *SearchDB) SearchForConversation(keyword string) ([]int, error) {
+	rows, err := sqlDB.db.Query(`
+		SELECT id FROM `+sqlDB.dbTable+` WHERE summary LIKE ?;
+	`, "%"+keyword+"%")
+	if err != nil {
+		return nil, fmt.Errorf("%v", err)
+	}
+	defer rows.Close()
+
+	var results []int
+	for rows.Next() {
+		var result *int
+		err := rows.Scan(&result)
+		if err != nil {
+			return nil, fmt.Errorf("%v", err)
+		}
+		// If response happens to be NULL (conv_id isn't set), it's fine to
+		// just skip it
+		if result != nil {
+			results = append(results, *result)
+		}
+	}
+
+	return results, nil
+}
+
+func (sqlDB *SearchDB) ShowConversation(sumID int) {
+	rows, err := sqlDB.db.Query(`
+		SELECT summary FROM `+sqlDB.dbTable+` WHERE id = ?;
+	`, sumID)
+	if err != nil {
+		log.Fatalf("error showing conversation: %v", err)
+	}
+	defer rows.Close()
+
+	var row struct {
+		summary string
+	}
+	for rows.Next() {
+		err := rows.Scan(&row.summary)
+		if err != nil {
+			log.Fatalf("error showing conversation: %v", err)
+		}
+		fmt.Printf("Summary: %s\n", row.summary)
+	}
+}
+
 func (sqlDB *SearchDB) Close() {
 	err := sqlDB.db.Close()
 	if err != nil {

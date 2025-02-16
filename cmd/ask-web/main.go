@@ -39,6 +39,36 @@ func main() {
 		os.Exit(0)
 	}
 
+	db, err := database.InitializeDB(opts.DBFileName, opts.DBTable)
+	if err != nil {
+		log.Fatal("Error opening database: ", err)
+	}
+	defer db.Close()
+
+	if opts.Search != "" {
+		ids, err := db.SearchForConversation(opts.Search)
+		if err != nil {
+			log.Fatal("Error searching for conversation:", err)
+		}
+
+		if len(ids) > 0 {
+			fmt.Print("Found ids: ")
+			for _, id := range ids {
+				fmt.Printf("%d, ", id)
+			}
+			fmt.Println()
+		} else {
+			fmt.Println("No conversations found.")
+		}
+
+		return
+	}
+
+	if opts.Show > 0 {
+		db.ShowConversation(opts.Show)
+		return
+	}
+
 	resultFilter := func(result search.SearchResult) bool {
 		for _, url := range opts.FilteredURLs {
 			if strings.Contains(result.URL, url) {
@@ -77,12 +107,6 @@ func main() {
 		log.Info("Original prompt: ", pflag.Arg(0))
 		log.Info("Generated query: ", query)
 	}
-
-	db, err := database.InitializeDB(opts.DBFileName, opts.DBTable)
-	if err != nil {
-		log.Fatal("Error opening database: ", err)
-	}
-	defer db.Close()
 
 	unescapedQuery, err := url.QueryUnescape(query)
 	if err != nil {
