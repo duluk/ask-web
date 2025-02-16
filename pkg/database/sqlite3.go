@@ -15,9 +15,14 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type SearchRow struct {
+	ID    int
+	Query string
+}
+
 type ResultRow struct {
-	query   string
-	summary string
+	Query   string
+	Summary string
 }
 
 type SearchDB struct {
@@ -81,26 +86,26 @@ func (sqlDB *SearchDB) SaveSearchResults(query string, results []search.SearchRe
 	return nil
 }
 
-func (sqlDB *SearchDB) SearchForConversation(keyword string) ([]int, error) {
+func (sqlDB *SearchDB) SearchForResult(keyword string) ([]SearchRow, error) {
 	rows, err := sqlDB.db.Query(`
-		SELECT id FROM `+sqlDB.dbTable+` WHERE summary LIKE ?;
+		SELECT id, query FROM `+sqlDB.dbTable+` WHERE summary LIKE ?;
 	`, "%"+keyword+"%")
 	if err != nil {
 		return nil, fmt.Errorf("%v", err)
 	}
 	defer rows.Close()
 
-	var results []int
+	var results []SearchRow
 	for rows.Next() {
-		var result *int
-		err := rows.Scan(&result)
+		var result SearchRow
+		err := rows.Scan(&result.ID, &result.Query)
 		if err != nil {
 			return nil, fmt.Errorf("%v", err)
 		}
 		// If response happens to be NULL (conv_id isn't set), it's fine to
 		// just skip it
-		if result != nil {
-			results = append(results, *result)
+		if result.ID != 0 {
+			results = append(results, SearchRow{ID: result.ID, Query: result.Query})
 		}
 	}
 
@@ -118,7 +123,7 @@ func (sqlDB *SearchDB) ReturnSearchResult(sumID int) *ResultRow {
 
 	var row ResultRow
 	for rows.Next() {
-		err := rows.Scan(&row.query, &row.summary)
+		err := rows.Scan(&row.Query, &row.Summary)
 		if err != nil {
 			log.Fatalf("error showing conversation: %v", err)
 		}
@@ -131,8 +136,8 @@ func (sqlDB *SearchDB) ReturnSearchResult(sumID int) *ResultRow {
 
 func (sqlDB *SearchDB) ShowSearchResult(sumID int) {
 	result := sqlDB.ReturnSearchResult(sumID)
-	fmt.Printf("Prompt: %s\n", result.query)
-	fmt.Printf("Summary: %s\n", result.summary)
+	fmt.Printf("Prompt: %s\n", result.Query)
+	fmt.Printf("Summary: %s\n", result.Summary)
 }
 
 func (sqlDB *SearchDB) Close() {
