@@ -44,6 +44,9 @@ type Opts struct {
 	QueryPrompt   string
 	SummaryPrompt string
 
+	Search string
+	Show   int
+
 	FilteredURLs []string
 
 	NumResults int
@@ -149,6 +152,8 @@ func Initialize() (*Opts, error) {
 		DBTable:       viper.GetString("database.table"),
 		QueryPrompt:   viper.GetString("model.query_prompt"),
 		SummaryPrompt: viper.GetString("model.summary_prompt"),
+		Search:        viper.GetString("search"),
+		Show:          viper.GetInt("show"),
 		NumResults:    viper.GetInt("model.num_results"),
 		MaxTokens:     viper.GetInt("model.max_tokens"),
 		ScreenWidth:   min(viper.GetInt("screen.width"), MaxTermWidth) - widthPad,
