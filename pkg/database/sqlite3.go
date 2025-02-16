@@ -15,6 +15,11 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type ResultRow struct {
+	query   string
+	summary string
+}
+
 type SearchDB struct {
 	db      *sql.DB
 	dbTable string
@@ -102,25 +107,32 @@ func (sqlDB *SearchDB) SearchForConversation(keyword string) ([]int, error) {
 	return results, nil
 }
 
-func (sqlDB *SearchDB) ShowConversation(sumID int) {
+func (sqlDB *SearchDB) ReturnSearchResult(sumID int) *ResultRow {
 	rows, err := sqlDB.db.Query(`
-		SELECT summary FROM `+sqlDB.dbTable+` WHERE id = ?;
+		SELECT query, summary FROM `+sqlDB.dbTable+` WHERE id = ?;
 	`, sumID)
 	if err != nil {
 		log.Fatalf("error showing conversation: %v", err)
 	}
 	defer rows.Close()
 
-	var row struct {
-		summary string
-	}
+	var row ResultRow
 	for rows.Next() {
-		err := rows.Scan(&row.summary)
+		err := rows.Scan(&row.query, &row.summary)
 		if err != nil {
 			log.Fatalf("error showing conversation: %v", err)
 		}
-		fmt.Printf("Summary: %s\n", row.summary)
+
+		return &row
 	}
+
+	return nil
+}
+
+func (sqlDB *SearchDB) ShowSearchResult(sumID int) {
+	result := sqlDB.ReturnSearchResult(sumID)
+	fmt.Printf("Prompt: %s\n", result.query)
+	fmt.Printf("Summary: %s\n", result.summary)
 }
 
 func (sqlDB *SearchDB) Close() {

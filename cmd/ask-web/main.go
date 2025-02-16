@@ -65,7 +65,7 @@ func main() {
 	}
 
 	if opts.Show > 0 {
-		db.ShowConversation(opts.Show)
+		db.ShowSearchResult(opts.Show)
 		return
 	}
 
