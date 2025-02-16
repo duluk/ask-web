@@ -46,15 +46,15 @@ func main() {
 	defer db.Close()
 
 	if opts.Search != "" {
-		ids, err := db.SearchForConversation(opts.Search)
+		results, err := db.SearchForResult(opts.Search)
 		if err != nil {
 			log.Fatal("Error searching for conversation:", err)
 		}
 
-		if len(ids) > 0 {
-			fmt.Print("Found ids: ")
-			for _, id := range ids {
-				fmt.Printf("%d, ", id)
+		if len(results) > 0 {
+			fmt.Println("Found these search results:")
+			for _, result := range results {
+				fmt.Printf("%d: %s\n", result.ID, result.Query)
 			}
 			fmt.Println()
 		} else {
