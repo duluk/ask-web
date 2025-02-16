@@ -194,7 +194,8 @@ func main() {
 
 	s.Stop()
 
-	db.SaveSearchResults(query, results, summary)
+	plainQuery, _ := url.QueryUnescape(query)
+	db.SaveSearchResults(plainQuery, results, summary)
 
 	wrapper := linewrap.NewLineWrapper(80, 4, os.Stdout)
 	wrapper.Write([]byte(summary))
