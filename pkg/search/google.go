@@ -3,6 +3,7 @@ package search
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 )
@@ -46,7 +47,8 @@ func GoogleSearch(apiKey string, cseID string, query string, maxResults int, fil
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Google Search API error: %s", resp.Status)
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("search failed with status %s: %s", resp.Status, string(body))
 	}
 
 	var result googleSearchResult

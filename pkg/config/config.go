@@ -30,6 +30,7 @@ var (
 type Opts struct {
 	ConfigDir   string
 	DumpConfig  bool
+	Quiet       bool
 	ShowAPIKeys bool
 
 	Model         string
@@ -104,6 +105,7 @@ func Initialize() (*Opts, error) {
 	pflag.BoolP("version", "v", false, "Print version and exit")
 	pflag.BoolP("full-version", "V", false, "Print full version information and exit")
 	pflag.BoolP("dump-config", "", false, "Dump configuration and exit")
+	pflag.BoolP("quiet", "Q", false, "Quiet mode - WIP")
 	pflag.BoolP("stderr", "", false, "Log to stderr in addition to file")
 	pflag.StringP("search", "s", "", "Search for a response")
 	pflag.IntP("show", "", 0, "Show response with ID")
@@ -141,6 +143,7 @@ func Initialize() (*Opts, error) {
 	return &Opts{
 		ConfigDir:     configDir,
 		DumpConfig:    viper.GetBool("dump-config"),
+		Quiet:         viper.GetBool("quiet"),
 		ShowAPIKeys:   viper.GetBool("show-keys"),
 		Model:         pflag.Lookup("model").Value.String(),
 		ContextLength: viper.GetInt("model.context_length"),

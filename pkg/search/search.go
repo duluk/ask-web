@@ -17,12 +17,10 @@ type SearchResult struct {
 }
 
 type APIKeys struct {
-	GeminiAPIKey  string
-	GoogleAPIKey  string
-	GoogleCSEID   string
-	BingAPIKey    string
-	BingConfigKey string
-	OpenAIKey     string
+	GeminiAPIKey string
+	GoogleAPIKey string
+	GoogleCSEID  string
+	OpenAIKey    string
 }
 
 type FilterFunc func(SearchResult) bool

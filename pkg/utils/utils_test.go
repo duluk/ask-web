@@ -167,54 +167,42 @@ func TestSetupKeys(t *testing.T) {
 		{
 			name: "All keys from environment",
 			envVars: map[string]string{
-				"GOOGLE_API_KEY":  "env_google_api_key",
-				"GOOGLE_CSE_ID":   "env_google_cse_id",
-				"BING_API_KEY":    "env_bing_api_key",
-				"BING_CONFIG_KEY": "env_bing_config_key",
-				"OPENAI_API_KEY":  "env_openai_api_key",
+				"GOOGLE_API_KEY": "env_google_api_key",
+				"GOOGLE_CSE_ID":  "env_google_cse_id",
+				"OPENAI_API_KEY": "env_openai_api_key",
 			},
 			expected: search.APIKeys{
-				GoogleAPIKey:  "env_google_api_key",
-				GoogleCSEID:   "env_google_cse_id",
-				BingAPIKey:    "env_bing_api_key",
-				BingConfigKey: "env_bing_config_key",
-				OpenAIKey:     "env_openai_api_key",
+				GoogleAPIKey: "env_google_api_key",
+				GoogleCSEID:  "env_google_cse_id",
+				OpenAIKey:    "env_openai_api_key",
 			},
 		},
 		{
 			name: "All keys from config files",
 			files: map[string]string{
-				"google-api-key":  "file_google_api_key",
-				"google-cse-id":   "file_google_cse_id",
-				"bing-api-key":    "file_bing_api_key",
-				"bing-config-key": "file_bing_config_key",
-				"openai-api-key":  "file_openai_api_key",
+				"google-api-key": "file_google_api_key",
+				"google-cse-id":  "file_google_cse_id",
+				"openai-api-key": "file_openai_api_key",
 			},
 			expected: search.APIKeys{
-				GoogleAPIKey:  "file_google_api_key",
-				GoogleCSEID:   "file_google_cse_id",
-				BingAPIKey:    "file_bing_api_key",
-				BingConfigKey: "file_bing_config_key",
-				OpenAIKey:     "file_openai_api_key",
+				GoogleAPIKey: "file_google_api_key",
+				GoogleCSEID:  "file_google_cse_id",
+				OpenAIKey:    "file_openai_api_key",
 			},
 		},
 		{
 			name: "Mixed sources",
 			envVars: map[string]string{
 				"GOOGLE_API_KEY": "env_google_api_key",
-				"BING_API_KEY":   "env_bing_api_key",
 			},
 			files: map[string]string{
-				"google-cse-id":   "file_google_cse_id",
-				"bing-config-key": "file_bing_config_key",
-				"openai-api-key":  "file_openai_api_key",
+				"google-cse-id":  "file_google_cse_id",
+				"openai-api-key": "file_openai_api_key",
 			},
 			expected: search.APIKeys{
-				GoogleAPIKey:  "env_google_api_key",
-				GoogleCSEID:   "file_google_cse_id",
-				BingAPIKey:    "env_bing_api_key",
-				BingConfigKey: "file_bing_config_key",
-				OpenAIKey:     "file_openai_api_key",
+				GoogleAPIKey: "env_google_api_key",
+				GoogleCSEID:  "file_google_cse_id",
+				OpenAIKey:    "file_openai_api_key",
 			},
 		},
 		{
@@ -227,8 +215,6 @@ func TestSetupKeys(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			os.Unsetenv("GOOGLE_API_KEY")
 			os.Unsetenv("GOOGLE_CSE_ID")
-			os.Unsetenv("BING_API_KEY")
-			os.Unsetenv("BING_CONFIG_KEY")
 			os.Unsetenv("OPENAI_API_KEY")
 
 			for k, v := range tc.envVars {

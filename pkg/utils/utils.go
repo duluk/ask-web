@@ -39,12 +39,10 @@ func DedupeResults(results []search.SearchResult) []search.SearchResult {
 
 func SetupKeys(configDir string) search.APIKeys {
 	return search.APIKeys{
-		GeminiAPIKey:  getKey("GEMINI_API_KEY", configDir),
-		GoogleAPIKey:  getKey("GOOGLE_API_KEY", configDir),
-		GoogleCSEID:   getKey("GOOGLE_CSE_ID", configDir),
-		BingAPIKey:    getKey("BING_API_KEY", configDir),
-		BingConfigKey: getKey("BING_CONFIG_KEY", configDir),
-		OpenAIKey:     getKey("OPENAI_API_KEY", configDir),
+		GeminiAPIKey: getKey("GEMINI_API_KEY", configDir),
+		GoogleAPIKey: getKey("GOOGLE_API_KEY", configDir),
+		GoogleCSEID:  getKey("GOOGLE_CSE_ID", configDir),
+		OpenAIKey:    getKey("OPENAI_API_KEY", configDir),
 	}
 }
 

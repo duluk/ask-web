@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -16,6 +17,7 @@ var (
 
 type SimpleLogger struct {
 	logger *log.Logger
+	quiet  bool
 }
 
 func GetLogger() *SimpleLogger {
@@ -41,6 +43,7 @@ func Init(opts *config.Opts) error {
 		log.SetFlags(log.Ldate | log.Ltime)
 		logInst = &SimpleLogger{
 			logger: log.New(multiWriter, "", 0),
+			quiet:  opts.Quiet,
 		}
 	})
 
@@ -68,6 +71,14 @@ func (*SimpleLogger) Error(v ...interface{}) {
 }
 
 func (*SimpleLogger) Fatal(v ...interface{}) {
+	// I don't actually like how I'm doing 'quiet' right now, but I haven't
+	// decided on a better way and I want it to work. I just want fatals to be
+	// loggged to stdout...unless don't.
+	if !logInst.quiet {
+		fmt.Printf("FATAL: ")
+		fmt.Println(v...)
+	}
+
 	log.SetPrefix("[FATAL] ")
 	log.Fatalln(v...)
 }

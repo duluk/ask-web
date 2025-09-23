@@ -87,9 +87,6 @@ func main() {
 		fmt.Println("Google API Key: ", apiKeys.GoogleAPIKey)
 		fmt.Println("Google CSE ID:  ", apiKeys.GoogleCSEID)
 		fmt.Println("---")
-		fmt.Println("Bing API Key:   ", apiKeys.BingAPIKey)
-		fmt.Println("Bing Config Key:", apiKeys.BingConfigKey)
-		fmt.Println("---")
 		fmt.Println("OpenAI Key:", apiKeys.OpenAIKey)
 		os.Exit(0)
 	}
@@ -134,19 +131,7 @@ func main() {
 		log.Info("Google URL:", result.URL)
 	}
 
-	var bingResults []search.SearchResult
-	if apiKeys.BingAPIKey != "" && apiKeys.BingConfigKey != "" {
-		bingResults, err = search.BingSearch(apiKeys.BingAPIKey, apiKeys.BingConfigKey, query, opts.NumResults, resultFilter)
-		if err != nil {
-			log.Fatal("Error during web search:", err)
-		}
-	}
-	for _, result := range bingResults {
-		log.Info("Bing URL:", result.URL)
-	}
-
 	results := append(ddgResults, googleResults...)
-	results = append(results, bingResults...)
 	results = utils.DedupeResults(results)
 
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
